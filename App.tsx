@@ -137,7 +137,7 @@ const App: React.FC = () => {
 						M
 					</div>
 					<h1 className='text-lg font-black tracking-tighter text-slate-900 uppercase'>
-						MUN Badge Studio
+						MUN Badges
 					</h1>
 				</div>
 

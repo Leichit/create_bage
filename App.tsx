@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { BadgeData, BadgeRole, FontSizes } from './types'
 import BadgePreview from './components/BadgePreview'
-import { getBadgeDesignIdeas } from './services/geminiService'
 import { toPng } from 'html-to-image'
 
 const AVAILABLE_FONTS = [
@@ -13,19 +12,45 @@ const AVAILABLE_FONTS = [
 	'Lora',
 ]
 
+export interface FullDesignData extends BadgeData {
+	squareColor: string
+	decorationColor: string
+	decorationOpacity: number
+	textColorMain: string
+	textColorMuted: string
+	textColorSquare: string
+	textColorFooter: string
+	textColorSubtitle: string
+	textColorCommittee: string
+	delegateBadgeBg: string
+}
+
 const App: React.FC = () => {
-	const [badgeData, setBadgeData] = useState<BadgeData>({
+	const [badgeData, setBadgeData] = useState<FullDesignData>({
+		// Цвета по умолчанию
+		primaryColor: '#ffffff', // Общий фон
+		accentColor: '#fbbf24', // Желтый (Заголовок и Кнопка)
+		squareColor: '#00000070', // Фон квадрата (IT)
+		decorationColor: '#0080ff', // Фигура на фоне
+		decorationOpacity: 0.20,
+		textColorMain: '#000000', // ИМЯ и СТРАНА
+		textColorSubtitle: '#000000', // International Conference
+		textColorCommittee: '#000000', // Текст комитета (снизу)
+		textColorMuted: '#6b7280',
+		textColorSquare: '#ffffff', // Текст внутри квадрата
+		textColorFooter: '#ffffff', // Текст внутри кнопки
+		delegateBadgeBg: 'rgba(0, 0, 0, 0.45)', // Фон плашки "Official Delegate"
+
+		// Контент
 		name: 'KOROLENYA\nARTUR',
 		country: 'Director of it\nand Technologies',
 		committee: 'CCPCJ2',
 		role: BadgeRole.SECRETARIAT,
-		roleLabel: 'OFFICIAL DELEGATE',
+		roleLabel: '',
 		squareCode: 'IT',
 		eventTitle: 'MIS MUN',
 		eventSubtitle: 'INTERNATIONAL CONFERENCE',
 		year: '2026',
-		primaryColor: '#0d121c',
-		accentColor: '#fbbf24',
 		titleFont: 'Montserrat',
 		logos: ['', '', ''],
 		fontSizes: {
@@ -56,24 +81,6 @@ const App: React.FC = () => {
 		setBadgeData(prev => ({ ...prev, [name]: value }))
 	}
 
-	const handleLogoChange = (index: number, value: string) => {
-		const newLogos = [...badgeData.logos]
-		newLogos[index] = value
-		setBadgeData(prev => ({ ...prev, logos: newLogos }))
-	}
-
-	const handleFileUpload = (
-		index: number,
-		e: React.ChangeEvent<HTMLInputElement>,
-	) => {
-		const file = e.target.files?.[0]
-		if (file) {
-			const reader = new FileReader()
-			reader.onloadend = () => handleLogoChange(index, reader.result as string)
-			reader.readAsDataURL(file)
-		}
-	}
-
 	const handleFontSizeChange = (key: keyof FontSizes, value: number) => {
 		setBadgeData(prev => ({
 			...prev,
@@ -82,39 +89,19 @@ const App: React.FC = () => {
 	}
 
 	const handleExportPNG = async () => {
-		const element = document.getElementById('badge-hidden-export')
+		const element = document.getElementById('main-badge-preview')
 		if (!element) return
-
 		setExporting(true)
 		try {
-			// 1. Ждем шрифты
 			await document.fonts.ready
-
-			// 2. Даем чуть больше времени на отрисовку скрытого элемента
-			await new Promise(resolve => setTimeout(resolve, 250))
-
-			// 3. Рендерим с pixelRatio 2 (очень четко, но безопасно)
-			const dataUrl = await toPng(element, {
-				quality: 0.95,
-				pixelRatio: 2,
-				cacheBust: true,
-				style: {
-					transform: 'none',
-					margin: '0',
-					padding: '0',
-					borderRadius: '0',
-				},
-			})
-
+			await new Promise(resolve => setTimeout(resolve, 200))
+			const dataUrl = await toPng(element, { quality: 1, pixelRatio: 4 })
 			const link = document.createElement('a')
 			link.href = dataUrl
-			link.download = `mun_badge_${badgeData.name.split('\n')[0].toLowerCase()}.png`
+			link.download = `mun_badge_${badgeData.name.replace(/\n/g, '_')}.png`
 			link.click()
 		} catch (error) {
-			console.error('Export error:', error)
-			alert(
-				'Ошибка при сохранении. Попробуйте обновить страницу или использовать другой браузер.',
-			)
+			alert('Ошибка экспорта')
 		} finally {
 			setExporting(false)
 		}
@@ -122,80 +109,116 @@ const App: React.FC = () => {
 
 	return (
 		<div className='min-h-screen flex flex-col lg:flex-row bg-[#f1f5f9]'>
-			{/* Скрытый контейнер для чистого экспорта */}
-			<div
-				style={{ position: 'fixed', left: '-5000px', top: '0', zIndex: -100 }}
-			>
-				<div id='badge-hidden-export'>
-					<BadgePreview data={badgeData} isExportMode={true} />
-				</div>
-			</div>
-
-			<aside className='lg:w-[420px] w-full bg-white border-r border-slate-200 p-8 flex flex-col gap-6 h-screen overflow-y-auto sticky top-0 shadow-2xl z-30'>
+			<aside className='lg:w-[450px] w-full bg-white border-r border-slate-200 p-6 flex flex-col gap-6 h-screen overflow-y-auto sticky top-0 shadow-xl z-30'>
 				<div className='flex items-center gap-3 mb-2'>
 					<div className='w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black text-xl'>
 						M
 					</div>
 					<h1 className='text-lg font-black tracking-tighter text-slate-900 uppercase'>
-						MUN Badges
+						MUN Designer
 					</h1>
 				</div>
 
 				<div className='space-y-6'>
 					<section className='bg-slate-50 p-5 rounded-3xl space-y-4 border border-slate-100'>
 						<h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
-							Conference
+							Настройка Цветов
 						</h3>
-						<input
-							name='eventTitle'
-							value={badgeData.eventTitle}
-							onChange={handleInputChange}
-							className='w-full px-4 py-2 border border-slate-200 rounded-xl font-bold uppercase'
-						/>
-						<select
-							name='titleFont'
-							value={badgeData.titleFont}
-							onChange={handleInputChange}
-							className='w-full px-4 py-2 border border-slate-200 rounded-xl bg-white font-bold'
-						>
-							{AVAILABLE_FONTS.map(f => (
-								<option key={f} value={f}>
-									{f}
-								</option>
-							))}
-						</select>
+						<div className='grid grid-cols-2 gap-4'>
+							<ColorInput
+								label='Фон бейджа'
+								name='primaryColor'
+								value={badgeData.primaryColor}
+								onChange={handleInputChange}
+							/>
+							<ColorInput
+								label='Акцент (Заголовок)'
+								name='accentColor'
+								value={badgeData.accentColor}
+								onChange={handleInputChange}
+							/>
+							<ColorInput
+								label='Цвет ИМЕНИ'
+								name='textColorMain'
+								value={badgeData.textColorMain}
+								onChange={handleInputChange}
+							/>
+							<ColorInput
+								label='Цвет подзаголовка'
+								name='textColorSubtitle'
+								value={badgeData.textColorSubtitle}
+								onChange={handleInputChange}
+							/>
+							<ColorInput
+								label='Фон квадрата'
+								name='squareColor'
+								value={badgeData.squareColor}
+								onChange={handleInputChange}
+							/>
+							<ColorInput
+								label='Текст в квадрате'
+								name='textColorSquare'
+								value={badgeData.textColorSquare}
+								onChange={handleInputChange}
+							/>
+							<ColorInput
+								label='Текст в кнопке'
+								name='textColorFooter'
+								value={badgeData.textColorFooter}
+								onChange={handleInputChange}
+							/>
+							<ColorInput
+								label='Цвет комитета'
+								name='textColorCommittee'
+								value={badgeData.textColorCommittee}
+								onChange={handleInputChange}
+							/>
+						</div>
+						<div className='pt-2'>
+							<label className='text-[9px] font-bold text-slate-500 uppercase block mb-1'>
+								Прозрачность декора (
+								{Math.round(badgeData.decorationOpacity * 100)}%)
+							</label>
+							<input
+								type='range'
+								min='0'
+								max='1'
+								step='0.01'
+								name='decorationOpacity'
+								value={badgeData.decorationOpacity}
+								onChange={handleInputChange}
+								className='w-full accent-slate-900'
+							/>
+						</div>
 					</section>
 
 					<section className='bg-slate-50 p-5 rounded-3xl space-y-4 border border-slate-100'>
 						<h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
-							Participant
+							Текст
 						</h3>
 						<div className='space-y-3'>
-							<select
-								name='role'
-								value={badgeData.role}
+							<input
+								name='eventTitle'
+								placeholder='MIS MUN'
+								value={badgeData.eventTitle}
 								onChange={handleInputChange}
-								className='w-full px-4 py-2 border border-slate-200 rounded-xl font-bold'
-							>
-								{Object.values(BadgeRole).map(role => (
-									<option key={role} value={role}>
-										{role}
-									</option>
-								))}
-							</select>
+								className='w-full px-4 py-2 border border-slate-200 rounded-xl font-bold uppercase'
+							/>
 							<textarea
 								name='name'
+								placeholder='ИМЯ'
 								value={badgeData.name}
 								onChange={handleInputChange}
 								rows={2}
-								className='w-full px-4 py-2 border border-slate-200 rounded-xl font-black uppercase resize-none'
+								className='w-full px-4 py-2 border border-slate-200 rounded-xl font-black uppercase text-sm'
 							/>
 							<textarea
 								name='country'
+								placeholder='Должность'
 								value={badgeData.country}
 								onChange={handleInputChange}
 								rows={2}
-								className='w-full px-4 py-2 border border-slate-200 rounded-xl font-bold resize-none text-sm'
+								className='w-full px-4 py-2 border border-slate-200 rounded-xl font-bold text-xs'
 							/>
 							<div className='grid grid-cols-2 gap-2'>
 								<input
@@ -208,41 +231,17 @@ const App: React.FC = () => {
 									name='committee'
 									value={badgeData.committee}
 									onChange={handleInputChange}
-									className='w-full px-4 py-2 border border-slate-200 rounded-xl font-bold'
+									className='w-full px-4 py-2 border border-slate-200 rounded-xl font-bold text-xs'
 								/>
 							</div>
 						</div>
 					</section>
 
-					<section className='bg-slate-50 p-5 rounded-3xl space-y-3 border border-slate-100'>
-						<h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
-							Logos
-						</h3>
-						{[0, 1, 2].map(i => (
-							<button
-								key={i}
-								onClick={() => fileInputRefs[i].current?.click()}
-								className='w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold hover:bg-slate-200 truncate'
-							>
-								{badgeData.logos[i]
-									? `Logo ${i + 1} Set`
-									: `Upload Logo ${i + 1}`}
-								<input
-									type='file'
-									ref={fileInputRefs[i]}
-									onChange={e => handleFileUpload(i, e)}
-									className='hidden'
-									accept='image/*'
-								/>
-							</button>
-						))}
-					</section>
-
 					<section className='bg-slate-50 p-5 rounded-3xl space-y-4 border border-slate-100'>
 						<h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
-							Typography Control
+							Размеры шрифта
 						</h3>
-						{['eventTitle', 'name', 'country', 'footerRole'].map(key => (
+						{['eventTitle', 'name', 'country'].map(key => (
 							<div key={key}>
 								<div className='flex justify-between mb-1'>
 									<span className='text-[9px] font-black text-slate-400 uppercase'>
@@ -255,7 +254,7 @@ const App: React.FC = () => {
 								<input
 									type='range'
 									min='8'
-									max='70'
+									max='80'
 									value={badgeData.fontSizes[key as keyof FontSizes]}
 									onChange={e =>
 										handleFontSizeChange(
@@ -272,27 +271,36 @@ const App: React.FC = () => {
 			</aside>
 
 			<main className='flex-1 flex flex-col items-center justify-center p-6 bg-slate-200 min-h-screen'>
-				<div className='flex flex-col items-center gap-10'>
-					<div className='bg-white p-12 rounded-[60px] shadow-2xl border border-white relative scale-[0.85] lg:scale-100 transition-transform'>
-						<div className='absolute top-6 left-1/2 -translate-x-1/2 bg-slate-900 px-4 py-1 rounded-full z-50'>
-							<span className='text-[9px] font-black text-white uppercase tracking-widest'>
-								Master Preview
-							</span>
-						</div>
+				<div className='flex flex-col items-center gap-8 scale-110'>
+					<div id='main-badge-preview' className='shadow-2xl'>
 						<BadgePreview data={badgeData} />
 					</div>
-
 					<button
 						onClick={handleExportPNG}
 						disabled={exporting}
-						className='px-20 py-6 bg-slate-900 text-white rounded-[32px] font-black shadow-2xl hover:bg-slate-800 active:scale-95 disabled:opacity-50 uppercase tracking-[0.25em] transition-all text-xs'
+						className='px-16 py-5 bg-slate-900 text-white rounded-[24px] font-black uppercase tracking-widest text-xs shadow-xl hover:scale-105 transition-all disabled:opacity-50'
 					>
-						{exporting ? 'Rendering...' : 'Download Badge (PNG)'}
+						{exporting ? 'Сохранение...' : 'Скачать PNG'}
 					</button>
 				</div>
 			</main>
 		</div>
 	)
 }
+
+const ColorInput = ({ label, name, value, onChange }: any) => (
+	<div>
+		<label className='text-[9px] font-bold text-slate-500 uppercase block mb-1'>
+			{label}
+		</label>
+		<input
+			type='color'
+			name={name}
+			value={value}
+			onChange={onChange}
+			className='w-full h-10 rounded-lg cursor-pointer border border-slate-200 overflow-hidden'
+		/>
+	</div>
+)
 
 export default App

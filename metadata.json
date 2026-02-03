@@ -1,0 +1,7 @@
+{
+  "name": "MUN Badge Studio",
+  "description": "A professional tool for designing Model United Nations badges with Blue and Yellow themes, featuring AI-powered design suggestions and real-time previews.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

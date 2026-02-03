@@ -1,15 +1,11 @@
 import React from 'react'
-import { BadgeData } from '../types'
+import { FullDesignData } from '../App'
 
 interface BadgePreviewProps {
-	data: BadgeData
-	isExportMode?: boolean
+	data: FullDesignData
 }
 
-const BadgePreview: React.FC<BadgePreviewProps> = ({
-	data,
-	isExportMode = false,
-}) => {
+const BadgePreview: React.FC<BadgePreviewProps> = ({ data }) => {
 	const { fontSizes, logos } = data
 
 	const getFontClass = (font: string) => {
@@ -29,101 +25,38 @@ const BadgePreview: React.FC<BadgePreviewProps> = ({
 		}
 	}
 
-	const palette = {
-		main: '#0d121c',
-		accent: '#fbbf24',
-		secondary: '#1a2436',
-		overlay: 'rgba(255, 255, 255, 0.05)',
-	}
-
 	return (
 		<div
 			style={{
 				width: '320px',
 				height: '480px',
-				backgroundColor: palette.main,
-				borderRadius: isExportMode ? '0px' : '45px',
+				backgroundColor: data.primaryColor,
 				position: 'relative',
 				overflow: 'hidden',
-				color: 'white',
 				boxSizing: 'border-box',
-				margin: '0',
-				padding: '0',
 				display: 'block',
 			}}
 		>
-			{/* 1. Декоративный фон */}
+			{/* Декор */}
 			<div
 				style={{
 					position: 'absolute',
-					top: '220px',
+					top: '15px',
 					left: '-100px',
 					width: '600px',
 					height: '400px',
-					backgroundColor: palette.secondary,
+					backgroundColor: data.decorationColor,
+					opacity: data.decorationOpacity,
 					transform: 'rotate(-20deg)',
 					zIndex: 1,
 				}}
 			></div>
 
-			{/* 2. Логотипы */}
+			{/* Конференция */}
 			<div
 				style={{
 					position: 'absolute',
-					top: '32px',
-					left: '0',
-					width: '320px',
-					display: 'flex',
-					justifyContent: 'center',
-					gap: '8px',
-					zIndex: 50,
-				}}
-			>
-				{logos.map((logo, index) => (
-					<div
-						key={index}
-						style={{
-							width: '40px',
-							height: '40px',
-							backgroundColor: palette.overlay,
-							border: '1px solid rgba(255,255,255,0.1)',
-							borderRadius: '10px',
-							display: 'flex',
-							alignItems: 'center',
-							justifyContent: 'center',
-							padding: '5px',
-							overflow: 'hidden',
-						}}
-					>
-						{logo ? (
-							<img
-								src={logo}
-								alt=''
-								style={{
-									maxWidth: '100%',
-									maxHeight: '100%',
-									objectFit: 'contain',
-								}}
-							/>
-						) : (
-							<div
-								style={{
-									width: '6px',
-									height: '6px',
-									borderRadius: '50%',
-									backgroundColor: 'rgba(255,255,255,0.1)',
-								}}
-							></div>
-						)}
-					</div>
-				))}
-			</div>
-
-			{/* 3. Шапка мероприятия */}
-			<div
-				style={{
-					position: 'absolute',
-					top: '100px',
+					top: '70px',
 					left: '32px',
 					right: '32px',
 					zIndex: 10,
@@ -132,7 +65,7 @@ const BadgePreview: React.FC<BadgePreviewProps> = ({
 				<div
 					className={getFontClass(data.titleFont)}
 					style={{
-						color: palette.accent,
+						color: data.accentColor,
 						fontSize: `${fontSizes.eventTitle}px`,
 						fontWeight: 900,
 						textTransform: 'uppercase',
@@ -144,128 +77,119 @@ const BadgePreview: React.FC<BadgePreviewProps> = ({
 				</div>
 				<div
 					style={{
+						color: data.textColorSubtitle,
+						opacity: 0.6,
 						fontSize: `${fontSizes.eventSubtitle}px`,
 						fontWeight: 700,
 						textTransform: 'uppercase',
 						letterSpacing: '0.1em',
-						opacity: 0.4,
 						marginTop: '4px',
-						lineHeight: '1.2',
 					}}
 				>
 					{data.eventSubtitle} • {data.year}
 				</div>
 			</div>
 
-			{/* 4. Метка роли */}
+			{/* Official Delegate */}
 			<div
 				style={{
 					position: 'absolute',
-					top: '195px',
+					top: '220px',
 					left: '32px',
-					backgroundColor: 'rgba(30, 41, 59, 0.98)',
+					backgroundColor: data.delegateBadgeBg,
 					padding: '5px 12px',
 					borderRadius: '8px',
-					border: '1px solid rgba(255,255,255,0.05)',
 					zIndex: 20,
 				}}
 			>
 				<span
 					style={{
-						color: palette.accent,
+						color: data.accentColor,
 						fontSize: `${fontSizes.roleLabel}px`,
 						fontWeight: 900,
 						textTransform: 'uppercase',
 						letterSpacing: '0.1em',
-						display: 'block',
-						lineHeight: '1',
 					}}
 				>
 					{data.roleLabel}
 				</span>
 			</div>
 
-			{/* 5. Имя участника */}
+			{/* ИМЯ */}
 			<div
 				style={{
 					position: 'absolute',
-					top: '235px',
+					top: '240px',
 					left: '32px',
 					right: '32px',
 					zIndex: 30,
-					height: '110px',
-					display: 'flex',
-					flexDirection: 'column',
-					justifyContent: 'flex-start',
 				}}
 			>
 				<div
 					style={{
+						color: data.textColorMain,
 						fontSize: `${fontSizes.name}px`,
 						fontWeight: 900,
 						textTransform: 'uppercase',
 						letterSpacing: '-0.04em',
 						lineHeight: '0.95',
 						whiteSpace: 'pre-wrap',
-						wordBreak: 'break-word',
-						margin: 0,
 					}}
 				>
 					{data.name}
 				</div>
 			</div>
 
-			{/* 6. Подробности */}
+			{/* Код и Должность */}
 			<div
 				style={{
 					position: 'absolute',
-					top: '330px',
+					top: '335px',
 					left: '32px',
 					right: '32px',
 					display: 'flex',
-					alignItems: 'flex-start',
 					gap: '12px',
 					zIndex: 30,
+					alignItems: 'center',
 				}}
 			>
 				<div
 					style={{
 						width: '52px',
 						height: '44px',
-						backgroundColor: 'white',
-						color: '#0d121c',
+						backgroundColor: data.squareColor,
+						color: data.textColorSquare,
 						borderRadius: '12px',
 						display: 'flex',
 						alignItems: 'center',
 						justifyContent: 'center',
 						fontWeight: 900,
 						fontSize: `${fontSizes.squareCode}px`,
-						flexShrink: 0,
 					}}
 				>
 					{data.squareCode}
 				</div>
-				<div style={{ minWidth: 0, paddingTop: '2px' }}>
+				<div>
 					<div
 						style={{
+							color: data.textColorMain,
 							fontSize: `${fontSizes.country}px`,
 							fontWeight: 700,
 							lineHeight: '1.2',
 							whiteSpace: 'pre-wrap',
-							margin: 0,
 						}}
 					>
 						{data.country}
 					</div>
 					<div
 						style={{
+							color: data.textColorCommittee,
+							opacity: 0.5,
 							fontSize: `${fontSizes.committee}px`,
 							fontWeight: 700,
 							textTransform: 'uppercase',
 							letterSpacing: '0.1em',
-							opacity: 0.3,
-							marginTop: '4px',
-							lineHeight: '1',
+							marginTop: '2px',
 						}}
 					>
 						{data.committee}
@@ -273,7 +197,7 @@ const BadgePreview: React.FC<BadgePreviewProps> = ({
 				</div>
 			</div>
 
-			{/* 7. Нижняя кнопка-роль */}
+			{/* Кнопка Роли */}
 			<div
 				style={{
 					position: 'absolute',
@@ -281,14 +205,13 @@ const BadgePreview: React.FC<BadgePreviewProps> = ({
 					left: '32px',
 					right: '32px',
 					height: '56px',
-					backgroundColor: palette.accent,
-					color: palette.main,
+					backgroundColor: data.accentColor,
+					color: data.textColorFooter,
 					borderRadius: '28px',
 					display: 'flex',
 					alignItems: 'center',
 					justifyContent: 'center',
 					zIndex: 40,
-					boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
 				}}
 			>
 				<div
@@ -297,7 +220,6 @@ const BadgePreview: React.FC<BadgePreviewProps> = ({
 						textTransform: 'uppercase',
 						letterSpacing: '0.2em',
 						fontSize: `${fontSizes.footerRole}px`,
-						lineHeight: '1',
 					}}
 				>
 					{data.role}

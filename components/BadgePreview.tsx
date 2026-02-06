@@ -52,6 +52,49 @@ const BadgePreview: React.FC<BadgePreviewProps> = ({ data }) => {
 				}}
 			></div>
 
+			{/* Логотипы */}
+			<div
+				style={{
+					position: 'absolute',
+					top: '20px',
+					left: '0',
+					width: '320px',
+					display: 'flex',
+					justifyContent: 'center',
+					gap: '8px',
+					zIndex: 50,
+				}}
+			>
+				{logos.map((logo: string, index: number) => (
+					<div
+						key={index}
+						style={{
+							width: '36px',
+							height: '36px',
+							backgroundColor: 'rgba(0,0,0,0.05)',
+							borderRadius: '8px',
+							display: 'flex',
+							alignItems: 'center',
+							justifyContent: 'center',
+							padding: '4px',
+							opacity: logo ? 1 : 0, // Скрываем пустые слоты
+						}}
+					>
+						{logo && (
+							<img
+								src={logo}
+								alt=''
+								style={{
+									maxWidth: '100%',
+									maxHeight: '100%',
+									objectFit: 'contain',
+								}}
+							/>
+						)}
+					</div>
+				))}
+			</div>
+
 			{/* Конференция */}
 			<div
 				style={{

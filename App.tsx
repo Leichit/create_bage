@@ -32,7 +32,7 @@ const App: React.FC = () => {
 		accentColor: '#fbbf24', // Желтый (Заголовок и Кнопка)
 		squareColor: '#00000070', // Фон квадрата (IT)
 		decorationColor: '#000000', // Фигура на фоне
-		decorationOpacity: 0.20,
+		decorationOpacity: 0.2,
 		textColorMain: '#000000', // ИМЯ и СТРАНА
 		textColorSubtitle: '#000000', // International Conference
 		textColorCommittee: '#000000', // Текст комитета (снизу)
@@ -79,6 +79,24 @@ const App: React.FC = () => {
 	) => {
 		const { name, value } = e.target
 		setBadgeData(prev => ({ ...prev, [name]: value }))
+	}
+
+	const handleLogoChange = (index: number, value: string) => {
+		const newLogos = [...badgeData.logos]
+		newLogos[index] = value
+		setBadgeData(prev => ({ ...prev, logos: newLogos }))
+	}
+
+	const handleFileUpload = (
+		index: number,
+		e: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const file = e.target.files?.[0]
+		if (file) {
+			const reader = new FileReader()
+			reader.onloadend = () => handleLogoChange(index, reader.result as string)
+			reader.readAsDataURL(file)
+		}
 	}
 
 	const handleFontSizeChange = (key: keyof FontSizes, value: number) => {
@@ -189,6 +207,40 @@ const App: React.FC = () => {
 								onChange={handleInputChange}
 								className='w-full accent-slate-900'
 							/>
+						</div>
+					</section>
+
+					<section className='bg-slate-50 p-5 rounded-3xl space-y-4 border border-slate-100'>
+						<h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+							Логотипы
+						</h3>
+						<div className='grid grid-cols-3 gap-2'>
+							{[0, 1, 2].map(i => (
+								<button
+									key={i}
+									onClick={() => fileInputRefs[i].current?.click()}
+									className={`aspect-square rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden transition-all ${badgeData.logos[i] ? 'border-slate-900 bg-white' : 'border-slate-300 bg-slate-100 hover:bg-slate-200'}`}
+								>
+									{badgeData.logos[i] ? (
+										<img
+											src={badgeData.logos[i]}
+											alt=''
+											className='w-full h-full object-contain p-1'
+										/>
+									) : (
+										<span className='text-[10px] font-bold text-slate-400'>
+											Лого {i + 1}
+										</span>
+									)}
+									<input
+										type='file'
+										ref={fileInputRefs[i]}
+										onChange={e => handleFileUpload(i, e)}
+										className='hidden'
+										accept='image/*'
+									/>
+								</button>
+							))}
 						</div>
 					</section>
 

@@ -137,7 +137,7 @@ const BadgePreview: React.FC<BadgePreviewProps> = ({ data }) => {
 			<div
 				style={{
 					position: 'absolute',
-					top: '220px',
+					top: '200px',
 					left: '32px',
 					backgroundColor: data.delegateBadgeBg,
 					padding: '5px 12px',
@@ -162,7 +162,7 @@ const BadgePreview: React.FC<BadgePreviewProps> = ({ data }) => {
 			<div
 				style={{
 					position: 'absolute',
-					top: '240px',
+					top: '220px',
 					left: '32px',
 					right: '32px',
 					zIndex: 30,
